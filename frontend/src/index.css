@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    @apply bg-neutral-50 text-neutral-900 antialiased selection:bg-emerald-100 selection:text-emerald-900;
+  }
+  
+  @media (prefers-color-scheme: dark) {
+    body {
+      @apply bg-neutral-950 text-neutral-100 selection:bg-emerald-950 selection:text-emerald-300;
+    }
+  }
+  
+  /* Accessible visible focus states */
+  *:focus-visible {
+    @apply outline-2 outline-offset-2 outline-emerald-600 dark:outline-emerald-500;
+  }
+}
