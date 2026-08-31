@@ -12,16 +12,16 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
     '@graph': [
       {
         '@type': 'WebApplication',
-        '@id': `https://shrinkly.vercel.app/compress-image-to-${targetSizeKb}kb#webapp`,
+        '@id': `https://shrinkly-livid.vercel.app/compress-image-to-${targetSizeKb}kb#webapp`,
         'name': `Shrinkly — Compress Image to ${targetSizeKb}KB`,
         'description': `Compress images under ${targetSizeKb}KB online. Secure and fast client-side image compressor utility for JPEG, PNG, and WebP.`,
-        'url': `https://shrinkly.vercel.app/compress-image-to-${targetSizeKb}kb`,
+        'url': `https://shrinkly-livid.vercel.app/compress-image-to-${targetSizeKb}kb`,
         'applicationCategory': 'MultimediaApplication',
         'operatingSystem': 'All',
       },
       {
         '@type': 'FAQPage',
-        '@id': `https://shrinkly.vercel.app/compress-image-to-${targetSizeKb}kb#faq`,
+        '@id': `https://shrinkly-livid.vercel.app/compress-image-to-${targetSizeKb}kb#faq`,
         'mainEntity': [
           {
             '@type': 'Question',

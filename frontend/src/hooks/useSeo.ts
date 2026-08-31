@@ -29,7 +29,7 @@ export function useSeo({
     metaDesc.setAttribute('content', description);
 
     // 3. Canonical URL
-    const baseUrl = 'https://shrinkly.vercel.app'; // Standard base domain for canonical mapping
+    const baseUrl = 'https://shrinkly-livid.vercel.app'; // Standard base domain for canonical mapping
     const canonicalUrl = `${baseUrl}${canonicalPath}`;
     
     let canonicalLink = document.querySelector('link[rel="canonical"]');

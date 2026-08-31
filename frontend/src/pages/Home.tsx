@@ -8,7 +8,7 @@ export function Home() {
     '@type': 'WebApplication',
     'name': 'Shrinkly — Online Image Compressor',
     'description': 'Compress JPG, PNG, and WebP images to a target file size (20KB, 50KB, 100KB, etc.) online. Fast, secure, and client-side.',
-    'url': 'https://shrinkly.vercel.app',
+    'url': 'https://shrinkly-livid.vercel.app',
     'applicationCategory': 'MultimediaApplication',
     'operatingSystem': 'All',
     'browserRequirements': 'Requires HTML5 Canvas and modern browser support.',

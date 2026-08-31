@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://shrinkly.vercel.app/sitemap.xml
+Sitemap: https://shrinkly-livid.vercel.app/sitemap.xml
