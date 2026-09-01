@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import type { ImageInfo, TargetSizePreset, CompressionResult, CompressionStatus } from '../types/compression';
-import { compressImage } from '../services/api';
+import { compressImageToLimit } from '../utils/imageCompression';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -102,12 +102,9 @@ export function useImageCompression(defaultPreset: TargetSizePreset = 100) {
     }
 
     try {
-      const compressionResult = await compressImage(imageFile, targetSizeKb);
+      const compressionResult = await compressImageToLimit(imageFile, targetSizeKb);
       setResult(compressionResult);
       setStatus('success');
-      
-      // Release original file from memory state once compression is done
-      setImageFile(null);
     } catch (err) {
       console.error(err);
       setStatus('error');

@@ -18,4 +18,7 @@ export interface CompressionResult {
   downloadUrl: string;
   blob: Blob;
   name: string;
+  outputFormat: string; // e.g., 'JPEG', 'WebP', 'PNG'
+  width?: number;
+  height?: number;
 }
