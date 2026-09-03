@@ -7,7 +7,7 @@ export function Home() {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
     'name': 'Shrinkly — Online Image Compressor',
-    'description': 'Compress JPG, PNG, and WebP images to a target file size (20KB, 50KB, 100KB, etc.) online. Fast, secure, and client-side.',
+    'description': 'Compress JPG, PNG, WebP, and GIF images to a target file size (20KB, 50KB, 100KB, etc.) online. Fast, secure, and client-side.',
     'url': 'https://shrinkly-livid.vercel.app',
     'applicationCategory': 'MultimediaApplication',
     'operatingSystem': 'All',
@@ -17,7 +17,7 @@ export function Home() {
   useSeo({
     title: 'Shrinkly — Compress Images to a Target File Size Online',
     description:
-      'Compress JPG, PNG, and WebP images to a specific target file size (e.g. 20KB, 50KB, 100KB) online. Secure client-side processing, instant download.',
+      'Compress JPG, PNG, WebP, and GIF images to a specific target file size (e.g. 20KB, 50KB, 100KB, 1MB) online. Secure client-side processing, instant download.',
     canonicalPath: '/',
     schema,
   });
@@ -29,8 +29,8 @@ export function Home() {
         <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
           Compress images to the size you need.
         </h1>
-        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[540px] mx-auto">
-          Compress JPG, PNG, and WebP images to a target file size. No installation required.
+        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[560px] mx-auto">
+          Compress JPG, PNG, WebP, and animated GIF images to a target file size. Fast, private, client-side.
         </p>
       </div>
 
@@ -46,32 +46,36 @@ export function Home() {
             What is Shrinkly?
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            Shrinkly is a high-performance image compressor utility designed to help you reduce image size to a specific target file size (like 100KB, 50KB, or 20KB) online. It provides an instant, secure way to compress JPG, PNG, and WebP photos directly in your web browser.
+            Shrinkly is a high-performance image compressor utility designed to help you reduce image size to a specific target file size (like 100KB, 50KB, 20KB, or 1MB) online. It provides an instant, secure way to compress JPG, PNG, WebP, and animated GIF files directly in your web browser.
           </p>
 
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             How image compression works
           </h2>
           <p className="text-neutral-600 dark:text-neutral-400 leading-relaxed">
-            When you select an image, Shrinkly analyzes its dimensions and format. It draws the image onto an HTML5 canvas and uses a binary search algorithm to adjust exports to the best quality factor. This ensures your compressed image is close to or under your target size with minimal loss in visual quality.
+            When you select or paste an image, Shrinkly analyzes its dimensions and format. It runs an adaptive binary search algorithm across quality, dimensions, and palette depth to ensure your output file is close to or under your target size with minimal loss in visual quality.
           </p>
         </div>
 
         <div className="space-y-4">
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
-            JPG vs PNG vs WebP formats
+            Supported image formats
           </h2>
           <ul className="space-y-2 text-neutral-600 dark:text-neutral-400 leading-relaxed list-disc list-inside">
             <li>
               <strong>JPEG / JPG:</strong> Best for photos and complex gradients. Great compression potential.
             </li>
             <li>
-              <strong>PNG:</strong> Lossless format with transparency. Often heavy; transparency is converted to JPEG when targeting strict file sizes.
+              <strong>PNG:</strong> Lossless format with transparency. Scaled to meet strict target file sizes.
             </li>
             <li>
-              <strong>WebP:</strong> Modern web format providing superior compression quality and transparency features in small bundles.
+              <strong>WebP:</strong> Modern web format providing superior compression quality and transparency in lightweight bundles.
+            </li>
+            <li>
+              <strong>GIF:</strong> Animated and static GIFs with frame-aware palette quantization and resolution optimization.
             </li>
           </ul>
+
 
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             Compress to other sizes

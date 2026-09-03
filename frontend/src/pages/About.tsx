@@ -31,7 +31,7 @@ export function About() {
           How it Works
         </h2>
         <p className="text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-          Shrinkly leverages HTML5 canvas rendering to run compression directly on your local device. This allows for zero network latency, immediate feedback, and unmatched privacy. For power-users requiring specific server-side optimization, it is designed to seamlessly plug into a lightweight Go-based API microservice.
+          Shrinkly leverages client-side HTML5 canvas rendering, adaptive binary search algorithms, and frame-aware palette quantization to compress JPG, PNG, WebP, and animated GIF files directly on your local device. This ensures zero network latency, immediate feedback, and complete privacy.
         </p>
       </section>
     </div>

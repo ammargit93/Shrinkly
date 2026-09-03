@@ -1,4 +1,5 @@
-import type { CompressionResult } from '../types/compression';
+import type { CompressionResult, CompressionStage } from '../types/compression';
+import { compressGifToLimit } from './gifCompression';
 
 export interface CompressionOptions {
   /**
@@ -6,6 +7,10 @@ export interface CompressionOptions {
    * Default: 8
    */
   maxIterations?: number;
+  /**
+   * Callback fired as compression moves through stages.
+   */
+  onStageChange?: (stage: CompressionStage) => void;
 }
 
 /**
@@ -13,9 +18,11 @@ export interface CompressionOptions {
  * - PNG -> PNG (.png)
  * - JPG / JPEG -> JPG (.jpg)
  * - WebP -> WebP (.webp)
+ * - GIF -> GIF (.gif)
  *
  * Quality & Dimension Strategy:
  * - If image is already <= target size: preserves original without degradation.
+ * - For GIF: Deconstructs frames and quantizes palette + scales dimensions.
  * - For PNG: Canvas PNG export is lossless in browsers. To hit a target limit,
  *   it tests full resolution first, and binary searches the dimension scale factor
  *   to find the largest possible resolution <= target size, preserving transparency.
@@ -31,12 +38,20 @@ export async function compressImageToLimit(
   const targetMime = inferMimeType(file);
   const formatLabel = getFormatLabel(targetMime);
 
+  // If GIF, route to dedicated GIF frame engine
+  if (targetMime === 'image/gif') {
+    return compressGifToLimit(file, targetSizeKb, options);
+  }
+
+  options.onStageChange?.('preparing');
+
   // 1. If image is already at or below target size, return original unmodified
   if (file.size <= targetSizeBytes) {
     const originalDimensions = await getImageDimensions(file).catch(() => ({
       width: undefined,
       height: undefined,
     }));
+
 
     return {
       originalSize: file.size,
@@ -284,6 +299,9 @@ export function canvasToBlob(
  * Infers the MIME type of the input file from its type or extension.
  */
 export function inferMimeType(file: File): string {
+  if (file.type === 'image/gif' || file.name.toLowerCase().endsWith('.gif')) {
+    return 'image/gif';
+  }
   if (file.type === 'image/png' || file.name.toLowerCase().endsWith('.png')) {
     return 'image/png';
   }
@@ -294,9 +312,10 @@ export function inferMimeType(file: File): string {
 }
 
 /**
- * Returns a human-friendly format name (e.g., 'JPEG', 'WebP', 'PNG').
+ * Returns a human-friendly format name (e.g., 'JPEG', 'WebP', 'PNG', 'GIF').
  */
 export function getFormatLabel(mimeType: string): string {
+  if (mimeType.includes('gif')) return 'GIF';
   if (mimeType.includes('png')) return 'PNG';
   if (mimeType.includes('webp')) return 'WebP';
   if (mimeType.includes('jpeg') || mimeType.includes('jpg')) return 'JPEG';
@@ -311,7 +330,9 @@ export function getCompressedFileName(originalName: string, mimeType: string): s
   const baseName = lastDot > 0 ? originalName.substring(0, lastDot) : originalName;
 
   let ext = 'jpg';
-  if (mimeType.includes('png')) {
+  if (mimeType.includes('gif')) {
+    ext = 'gif';
+  } else if (mimeType.includes('png')) {
     ext = 'png';
   } else if (mimeType.includes('webp')) {
     ext = 'webp';
@@ -319,3 +340,4 @@ export function getCompressedFileName(originalName: string, mimeType: string): s
 
   return `${baseName}-compressed.${ext}`;
 }
+

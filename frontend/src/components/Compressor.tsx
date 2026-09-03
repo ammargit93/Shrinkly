@@ -15,6 +15,7 @@ interface CompressorProps {
 export function Compressor({ defaultPreset = 100 }: CompressorProps) {
   const {
     status,
+    stage,
     imageInfo,
     preset,
     customSize,
@@ -26,6 +27,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
     setCustomSize,
     setCustomUnit,
     compress,
+    recompress,
     reset,
   } = useImageCompression(defaultPreset);
 
@@ -42,17 +44,18 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
         <ImageUploader onFileSelected={selectImage} />
       )}
 
-      {/* Selected / Compress/ Loading / Success State */}
+      {/* Selected / Compress / Loading / Success State */}
       {imageInfo && (
         <div className="space-y-4">
           <ImageInfo info={imageInfo} onClear={reset} />
 
           {isSelected && (
-            <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-md p-6 space-y-6">
+            <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl p-6 space-y-6 shadow-xs">
               <TargetSize
                 preset={preset}
                 customSize={customSize}
                 customUnit={customUnit}
+                currentSizeBytes={imageInfo.size}
                 onPresetChange={setPreset}
                 onCustomSizeChange={setCustomSize}
                 onCustomUnitChange={setCustomUnit}
@@ -60,22 +63,27 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
               <button
                 type="button"
                 onClick={compress}
-                className="w-full py-3 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded transition-colors cursor-pointer"
+                className="w-full py-3.5 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-colors cursor-pointer shadow-xs"
               >
                 Compress image
               </button>
             </div>
           )}
 
-          {isCompressing && <CompressionState />}
+          {isCompressing && <CompressionState stage={stage} />}
 
           {isSuccess && result && (
-            <CompressionResult result={result} onReset={reset} />
+            <CompressionResult
+              result={result}
+              originalPreviewUrl={imageInfo.previewUrl}
+              onReset={reset}
+              onEditTarget={() => recompress()}
+            />
           )}
         </div>
       )}
 
-      {/* Standalone Error State (when no image details can be shown, e.g. upload failed initial validation) */}
+      {/* Standalone Error State */}
       {isError && !imageInfo && (
         <div className="space-y-4">
           <ErrorMessage message={error || 'An error occurred'} onRetry={reset} />
@@ -83,7 +91,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
         </div>
       )}
 
-      {/* Error state overlay when image info is active (e.g. compression failed) */}
+      {/* Error state overlay when image info is active */}
       {isError && imageInfo && (
         <div className="space-y-4">
           <ErrorMessage message={error || 'An error occurred'} onRetry={compress} />
@@ -93,7 +101,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
       {/* Subtle privacy disclaimer */}
       {!isCompressing && !isSuccess && (
         <p className="text-center text-xs text-neutral-450 dark:text-neutral-500">
-          Your images aren't stored. Read our{' '}
+          Your images aren't uploaded to any remote server. Read our{' '}
           <Link href="/privacy" className="underline hover:text-neutral-600 dark:hover:text-neutral-400">
             Privacy Policy
           </Link>{' '}
@@ -105,3 +113,4 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
 }
 
 export default Compressor;
+

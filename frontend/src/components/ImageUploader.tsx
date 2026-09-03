@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload } from 'lucide-react';
+import { Upload, Image as ImageIcon, Clipboard } from 'lucide-react';
 
 interface ImageUploaderProps {
   onFileSelected: (file: File) => void;
@@ -48,11 +48,11 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
       onDragOver={handleDrag}
       onDragLeave={handleDrag}
       onDrop={handleDrop}
-      className={`relative w-full rounded-md border border-dashed text-center transition-all duration-200 
+      className={`relative w-full rounded-xl border-2 border-dashed text-center transition-all duration-200 group
         ${
           isDragActive
-            ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/10'
-            : 'border-neutral-300 hover:border-neutral-400 dark:border-neutral-800 dark:hover:border-neutral-700 bg-white dark:bg-neutral-900'
+            ? 'border-emerald-500 bg-emerald-50/40 dark:bg-emerald-950/20 scale-[0.998]'
+            : 'border-neutral-300 hover:border-emerald-500/70 dark:border-neutral-800 dark:hover:border-emerald-500/50 bg-white dark:bg-neutral-900/90 shadow-sm'
         }
       `}
     >
@@ -60,7 +60,7 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
         ref={fileInputRef}
         type="file"
         id="file-upload"
-        accept="image/jpeg,image/png,image/webp"
+        accept="image/jpeg,image/png,image/webp,image/gif"
         className="sr-only"
         onChange={handleFileChange}
       />
@@ -68,22 +68,42 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
         htmlFor="file-upload"
         tabIndex={0}
         onKeyDown={onKeyDown}
-        className="flex flex-col items-center justify-center py-12 px-6 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-md"
+        className="flex flex-col items-center justify-center py-12 px-6 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-xl"
       >
-        <Upload className="h-8 w-8 text-neutral-400 dark:text-neutral-600 mb-4" />
-        <span className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-          Drop an image here
+        <div className="w-14 h-14 rounded-full bg-neutral-100 dark:bg-neutral-800/80 flex items-center justify-center mb-4 group-hover:scale-105 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/40 transition-all duration-200">
+          <Upload className="h-6 w-6 text-neutral-500 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-450 transition-colors" />
+        </div>
+
+        <span className="text-base font-semibold text-neutral-850 dark:text-neutral-100">
+          Drop your image here
         </span>
-        <span className="text-xs text-neutral-450 dark:text-neutral-450 my-1.5">or</span>
-        <span className="inline-flex items-center justify-center px-4 py-2 text-xs font-semibold text-neutral-900 bg-neutral-100 hover:bg-neutral-200 dark:text-neutral-50 dark:bg-neutral-800 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700 rounded transition-colors mb-4">
-          Choose image
+
+        <span className="text-xs text-neutral-400 dark:text-neutral-500 my-1.5 flex items-center gap-1.5">
+          <span>or click to browse</span>
+          <span>·</span>
+          <span className="inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
+            <Clipboard className="h-3 w-3" /> Ctrl+V
+          </span>
         </span>
-        <span className="text-xs text-neutral-400 dark:text-neutral-500">
-          JPG, PNG, WebP · Max 50 MB
-        </span>
+
+        <div className="pt-4 flex flex-wrap items-center justify-center gap-1.5">
+          {['JPG', 'PNG', 'WebP', 'GIF'].map((fmt) => (
+            <span
+              key={fmt}
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-350"
+            >
+              <ImageIcon className="h-3 w-3 opacity-60" />
+              {fmt}
+            </span>
+          ))}
+          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 ml-1">
+            (up to 50MB)
+          </span>
+        </div>
       </label>
     </div>
   );
 }
 
 export default ImageUploader;
+

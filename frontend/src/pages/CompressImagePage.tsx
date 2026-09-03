@@ -14,7 +14,7 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
         '@type': 'WebApplication',
         '@id': `https://shrinkly-livid.vercel.app/compress-image-to-${targetSizeKb}kb#webapp`,
         'name': `Shrinkly — Compress Image to ${targetSizeKb}KB`,
-        'description': `Compress images under ${targetSizeKb}KB online. Secure and fast client-side image compressor utility for JPEG, PNG, and WebP.`,
+        'description': `Compress images under ${targetSizeKb}KB online. Secure and fast client-side image compressor utility for JPEG, PNG, WebP, and GIF.`,
         'url': `https://shrinkly-livid.vercel.app/compress-image-to-${targetSizeKb}kb`,
         'applicationCategory': 'MultimediaApplication',
         'operatingSystem': 'All',
@@ -28,7 +28,7 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
             'name': `How do I compress an image to ${targetSizeKb}KB?`,
             'acceptedAnswer': {
               '@type': 'Answer',
-              'text': `Upload your JPG, PNG, or WebP file to Shrinkly, select the ${targetSizeKb}KB preset, and run the compressor. It optimizes the dimensions and quality client-side so you can download the result instantly.`,
+              'text': `Upload your JPG, PNG, WebP, or GIF file to Shrinkly, select the ${targetSizeKb}KB preset, and run the compressor. It optimizes dimensions, quality, and palettes client-side so you can download the result instantly.`,
             },
           },
           {
@@ -45,8 +45,8 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
   };
 
   useSeo({
-    title: `Compress Image to ${targetSizeKb}KB Online — JPG, PNG, WebP Optimizer`,
-    description: `Reduce image size to ${targetSizeKb}KB or less. Secure, fast, and free client-side image compressor utility. Optimize JPG, PNG, and WebP formats instantly.`,
+    title: `Compress Image to ${targetSizeKb}KB Online — JPG, PNG, WebP, GIF Optimizer`,
+    description: `Reduce image size to ${targetSizeKb}KB or less. Secure, fast, and free client-side image compressor utility. Optimize JPG, PNG, WebP, and GIF formats instantly.`,
     canonicalPath: `/compress-image-to-${targetSizeKb}kb`,
     schema,
   });
@@ -62,9 +62,10 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
           Compress image to {targetSizeKb}KB
         </h1>
         <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[540px] mx-auto">
-          Reduce JPEG, PNG, or WebP images to {targetSizeKb}KB or less without installing software.
+          Reduce JPEG, PNG, WebP, or GIF images to {targetSizeKb}KB or less without installing software.
         </p>
       </div>
+
 
       {/* Compressor Tool */}
       <Compressor defaultPreset={targetSizeKb} />
