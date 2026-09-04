@@ -23,13 +23,13 @@ export function Home() {
   });
 
   return (
-    <div className="max-w-[850px] mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12">
+    <div className="max-w-[850px] mx-auto px-4 sm:px-6 py-6 sm:py-12 space-y-6 sm:space-y-12">
       {/* Title / Main Headings */}
-      <div className="text-center space-y-3 sm:space-y-4">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+      <div className="text-center space-y-2.5 sm:space-y-4">
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
           Compress images to the size you need.
         </h1>
-        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[560px] mx-auto">
+        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[560px] mx-auto px-1 sm:px-0">
           Compress JPG, PNG, WebP, and animated GIF images to a target file size. Fast, private, client-side.
         </p>
       </div>
@@ -40,7 +40,7 @@ export function Home() {
       {/* SEO copy & internal links */}
       <hr className="border-neutral-200 dark:border-neutral-800" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-neutral-700 dark:text-neutral-350">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-sm text-neutral-700 dark:text-neutral-350">
         <div className="space-y-4">
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             What is Shrinkly?
@@ -76,41 +76,40 @@ export function Home() {
             </li>
           </ul>
 
-
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             Compress to other sizes
           </h2>
-          <p className="text-neutral-605 dark:text-neutral-450 text-xs">
+          <p className="text-neutral-600 dark:text-neutral-400 text-xs">
             Need to compress your image to a specific limit? Use our dedicated target size tools:
           </p>
-          <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 pt-1 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-xs">
             <Link
               href="/compress-image-to-20kb"
-              className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+              className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
             >
               Compress image to 20KB
             </Link>
             <Link
               href="/compress-image-to-50kb"
-              className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+              className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
             >
               Compress image to 50KB
             </Link>
             <Link
               href="/compress-image-to-100kb"
-              className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+              className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
             >
               Compress image to 100KB
             </Link>
             <Link
               href="/compress-image-to-200kb"
-              className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+              className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
             >
               Compress image to 200KB
             </Link>
             <Link
               href="/compress-image-to-500kb"
-              className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+              className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
             >
               Compress image to 500KB
             </Link>

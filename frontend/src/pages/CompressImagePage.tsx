@@ -55,17 +55,16 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
   const siblingSizes = allSizes.filter((size) => size !== targetSizeKb);
 
   return (
-    <div className="max-w-[850px] mx-auto px-4 py-8 sm:py-12 space-y-8 sm:space-y-12">
+    <div className="max-w-[850px] mx-auto px-4 sm:px-6 py-6 sm:py-12 space-y-6 sm:space-y-12">
       {/* Title */}
-      <div className="text-center space-y-3 sm:space-y-4">
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
+      <div className="text-center space-y-2.5 sm:space-y-4">
+        <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-neutral-900 dark:text-neutral-50 leading-tight">
           Compress image to {targetSizeKb}KB
         </h1>
-        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[540px] mx-auto">
+        <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[540px] mx-auto px-1 sm:px-0">
           Reduce JPEG, PNG, WebP, or GIF images to {targetSizeKb}KB or less without installing software.
         </p>
       </div>
-
 
       {/* Compressor Tool */}
       <Compressor defaultPreset={targetSizeKb} />
@@ -73,7 +72,7 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
       {/* SEO copy & dynamic internal linking */}
       <hr className="border-neutral-200 dark:border-neutral-800" />
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm text-neutral-700 dark:text-neutral-350">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 text-sm text-neutral-700 dark:text-neutral-350">
         <div className="space-y-4">
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             How to compress an image to {targetSizeKb}KB
@@ -104,15 +103,15 @@ export function CompressImagePage({ targetSizeKb }: CompressImagePageProps) {
           <h2 className="text-base font-semibold text-neutral-850 dark:text-neutral-200">
             Other target sizes
           </h2>
-          <p className="text-neutral-605 dark:text-neutral-450 text-xs">
+          <p className="text-neutral-600 dark:text-neutral-400 text-xs">
             Looking for a different target file size? Select another size option:
           </p>
-          <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 pt-1 text-xs">
             {siblingSizes.map((size) => (
               <Link
                 key={size}
                 href={`/compress-image-to-${size}kb`}
-                className="text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors"
+                className="py-1 text-emerald-600 hover:text-emerald-700 dark:text-emerald-450 dark:hover:text-emerald-400 underline decoration-emerald-500/20 hover:decoration-emerald-500 transition-colors inline-block"
               >
                 Compress image to {size}KB
               </Link>

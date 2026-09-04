@@ -1,8 +1,16 @@
 @import "tailwindcss";
 
 @layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply bg-neutral-50 text-neutral-900 antialiased selection:bg-emerald-100 selection:text-emerald-900;
+    -webkit-tap-highlight-color: transparent;
+    overflow-x: hidden;
+    min-height: 100dvh;
   }
   
   @media (prefers-color-scheme: dark) {
@@ -15,4 +23,13 @@
   *:focus-visible {
     @apply outline-2 outline-offset-2 outline-emerald-600 dark:outline-emerald-500;
   }
+
+  /* Fast responsive taps on mobile */
+  button, a, input, select, label {
+    touch-action: manipulation;
+  }
+}
+
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }

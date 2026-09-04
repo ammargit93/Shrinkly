@@ -50,7 +50,7 @@ export function CompressionState({ stage = 'preparing' }: CompressionStateProps)
   const { icon, title, subtitle, progress } = getStageInfo(stage);
 
   return (
-    <div className="flex flex-col items-center justify-center p-8 sm:p-12 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl space-y-4 shadow-xs">
+    <div className="flex flex-col items-center justify-center p-6 sm:p-12 border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl space-y-4 shadow-xs">
       <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-950/40 flex items-center justify-center">
         {icon}
       </div>

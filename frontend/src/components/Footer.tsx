@@ -2,19 +2,19 @@ import { Link } from './Router';
 
 export function Footer() {
   return (
-    <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 mt-auto py-8 px-4 sm:px-6">
+    <footer className="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-950 mt-auto py-6 sm:py-8 px-4 sm:px-6 pb-safe">
       <div className="max-w-[850px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-neutral-400 dark:text-neutral-500">
-        <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
-          <Link href="/about" className="hover:text-neutral-750 dark:hover:text-neutral-350 transition-colors">
+        <div className="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-1">
+          <Link href="/about" className="py-1 px-1 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
             About
           </Link>
-          <Link href="/faq" className="hover:text-neutral-750 dark:hover:text-neutral-350 transition-colors">
+          <Link href="/faq" className="py-1 px-1 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
             FAQ
           </Link>
-          <Link href="/privacy" className="hover:text-neutral-750 dark:hover:text-neutral-350 transition-colors">
+          <Link href="/privacy" className="py-1 px-1 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
             Privacy
           </Link>
-          <Link href="/terms" className="hover:text-neutral-750 dark:hover:text-neutral-350 transition-colors">
+          <Link href="/terms" className="py-1 px-1 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
             Terms
           </Link>
         </div>

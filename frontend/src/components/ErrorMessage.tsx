@@ -20,9 +20,9 @@ export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex items-center gap-1.5 text-xs font-semibold text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 underline underline-offset-4 decoration-1 decoration-red-400/40 hover:decoration-red-500/80 transition-colors"
+          className="inline-flex items-center gap-1.5 py-1 text-xs font-semibold text-red-700 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 underline underline-offset-4 decoration-1 decoration-red-400/40 hover:decoration-red-500/80 transition-colors cursor-pointer"
         >
-          <RefreshCw className="h-3 w-3" />
+          <RefreshCw className="h-3.5 w-3.5" />
           Try again
         </button>
       </div>

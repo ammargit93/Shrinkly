@@ -50,7 +50,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
           <ImageInfo info={imageInfo} onClear={reset} />
 
           {isSelected && (
-            <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl p-6 space-y-6 shadow-xs">
+            <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-xs">
               <TargetSize
                 preset={preset}
                 customSize={customSize}
@@ -63,7 +63,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
               <button
                 type="button"
                 onClick={compress}
-                className="w-full py-3.5 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-colors cursor-pointer shadow-xs"
+                className="w-full py-3.5 px-4 text-base sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-all cursor-pointer shadow-xs"
               >
                 Compress image
               </button>
