@@ -15,7 +15,7 @@ export function Home() {
   };
 
   useSeo({
-    title: 'Shrinkly — Compress Images to a Target File Size Online',
+    title: 'Shrinkly - Compress Images to a Target File Size Online',
     description:
       'Compress JPG, PNG, WebP, and GIF images to a specific target file size (e.g. 20KB, 50KB, 100KB, 1MB) online. Secure client-side processing, instant download.',
     canonicalPath: '/',
@@ -30,7 +30,7 @@ export function Home() {
           Compress images to the size you need.
         </h1>
         <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 max-w-[560px] mx-auto px-1 sm:px-0">
-          Compress JPG, PNG, WebP, and animated GIF images to a target file size. Fast, private, client-side.
+          Compress JPG, PNG, WebP, and animated GIF images to a target size, or batch compress up to 10 images into a lightweight ZIP archive.
         </p>
       </div>
 

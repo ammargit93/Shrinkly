@@ -1,11 +1,12 @@
 import React, { useState, useRef } from 'react';
-import { Upload, Image as ImageIcon, Clipboard } from 'lucide-react';
+import { Upload, Image as ImageIcon, Clipboard, Files } from 'lucide-react';
 
 interface ImageUploaderProps {
-  onFileSelected: (file: File) => void;
+  onFilesSelected: (files: File[]) => void;
+  multiple?: boolean;
 }
 
-export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
+export function ImageUploader({ onFilesSelected, multiple = true }: ImageUploaderProps) {
   const [isDragActive, setIsDragActive] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -24,14 +25,22 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
     e.stopPropagation();
     setIsDragActive(false);
 
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      onFileSelected(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const filesArray = Array.from(e.dataTransfer.files).filter((file) =>
+        file.type.startsWith('image/') || file.name.match(/\.(jpe?g|png|webp|gif)$/i)
+      );
+      if (filesArray.length > 0) {
+        onFilesSelected(filesArray);
+      }
     }
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      onFileSelected(e.target.files[0]);
+    if (e.target.files && e.target.files.length > 0) {
+      const filesArray = Array.from(e.target.files);
+      onFilesSelected(filesArray);
+      // Reset input value so the same file can be selected again if needed
+      e.target.value = '';
     }
   };
 
@@ -60,6 +69,7 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
         ref={fileInputRef}
         type="file"
         id="file-upload"
+        multiple={multiple}
         accept="image/jpeg,image/png,image/webp,image/gif"
         className="sr-only"
         onChange={handleFileChange}
@@ -75,12 +85,12 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
         </div>
 
         <span className="text-base font-semibold text-neutral-850 dark:text-neutral-100">
-          <span className="sm:hidden">Tap to upload image</span>
-          <span className="hidden sm:inline">Drop your image here</span>
+          <span className="sm:hidden">Tap to upload image(s)</span>
+          <span className="hidden sm:inline">Drop images here (single or batch)</span>
         </span>
 
         <span className="text-xs text-neutral-400 dark:text-neutral-500 my-1.5 flex flex-wrap items-center justify-center gap-1.5 text-center">
-          <span className="hidden sm:inline">or click to browse</span>
+          <span className="hidden sm:inline">or click to browse multiple files</span>
           <span className="hidden sm:inline">·</span>
           <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
             <Clipboard className="h-3 w-3" /> Ctrl+V
@@ -100,8 +110,9 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
               {fmt}
             </span>
           ))}
-          <span className="text-[11px] text-neutral-400 dark:text-neutral-500 ml-0.5">
-            (up to 50MB)
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/30">
+            <Files className="h-3 w-3" />
+            Up to 10 images (max 20 MB)
           </span>
         </div>
       </label>
@@ -110,4 +121,3 @@ export function ImageUploader({ onFileSelected }: ImageUploaderProps) {
 }
 
 export default ImageUploader;
-

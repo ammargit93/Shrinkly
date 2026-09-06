@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useImageCompression } from '../hooks/useImageCompression';
 import type { TargetSizePreset } from '../types/compression';
 import { ImageUploader } from './ImageUploader';
@@ -6,6 +7,7 @@ import { TargetSize } from './TargetSize';
 import { CompressionState } from './CompressionState';
 import { CompressionResult } from './CompressionResult';
 import { ErrorMessage } from './ErrorMessage';
+import { BatchCompressor } from './BatchCompressor';
 import { Link } from './Router';
 
 interface CompressorProps {
@@ -13,6 +15,8 @@ interface CompressorProps {
 }
 
 export function Compressor({ defaultPreset = 100 }: CompressorProps) {
+  const [batchFiles, setBatchFiles] = useState<File[] | null>(null);
+
   const {
     status,
     stage,
@@ -28,8 +32,36 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
     setCustomUnit,
     compress,
     recompress,
-    reset,
+    reset: resetSingle,
   } = useImageCompression(defaultPreset);
+
+  const handleFilesSelected = (files: File[]) => {
+    if (files.length > 1) {
+      resetSingle();
+      setBatchFiles(files);
+    } else if (files.length === 1) {
+      setBatchFiles(null);
+      selectImage(files[0]);
+    }
+  };
+
+  const handleResetAll = () => {
+    setBatchFiles(null);
+    resetSingle();
+  };
+
+  // If in Batch mode
+  if (batchFiles && batchFiles.length > 0) {
+    return (
+      <div className="w-full max-w-[800px] mx-auto space-y-4">
+        <BatchCompressor
+          initialFiles={batchFiles}
+          onReset={handleResetAll}
+          defaultPreset={defaultPreset}
+        />
+      </div>
+    );
+  }
 
   const isIdle = status === 'idle';
   const isSelected = status === 'selected';
@@ -40,14 +72,12 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
   return (
     <div className="w-full max-w-[800px] mx-auto space-y-4">
       {/* Upload State */}
-      {isIdle && (
-        <ImageUploader onFileSelected={selectImage} />
-      )}
+      {isIdle && <ImageUploader onFilesSelected={handleFilesSelected} />}
 
       {/* Selected / Compress / Loading / Success State */}
       {imageInfo && (
         <div className="space-y-4">
-          <ImageInfo info={imageInfo} onClear={reset} />
+          <ImageInfo info={imageInfo} onClear={handleResetAll} />
 
           {isSelected && (
             <div className="border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 rounded-xl p-4 sm:p-6 space-y-5 sm:space-y-6 shadow-xs">
@@ -76,7 +106,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
             <CompressionResult
               result={result}
               originalPreviewUrl={imageInfo.previewUrl}
-              onReset={reset}
+              onReset={handleResetAll}
               onEditTarget={() => recompress()}
             />
           )}
@@ -86,8 +116,8 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
       {/* Standalone Error State */}
       {isError && !imageInfo && (
         <div className="space-y-4">
-          <ErrorMessage message={error || 'An error occurred'} onRetry={reset} />
-          <ImageUploader onFileSelected={selectImage} />
+          <ErrorMessage message={error || 'An error occurred'} onRetry={handleResetAll} />
+          <ImageUploader onFilesSelected={handleFilesSelected} />
         </div>
       )}
 
@@ -101,7 +131,7 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
       {/* Subtle privacy disclaimer */}
       {!isCompressing && !isSuccess && (
         <p className="text-center text-xs text-neutral-450 dark:text-neutral-500">
-          Your images aren't uploaded to any remote server. Read our{' '}
+          Single images are compressed locally in your browser. Batches (up to 10 images, &lt;20MB) are processed sequentially in-memory. Read our{' '}
           <Link href="/privacy" className="underline hover:text-neutral-600 dark:hover:text-neutral-400">
             Privacy Policy
           </Link>{' '}
@@ -113,4 +143,3 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
 }
 
 export default Compressor;
-
