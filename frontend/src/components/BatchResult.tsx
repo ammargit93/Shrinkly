@@ -1,5 +1,5 @@
 import { useState, useId } from 'react';
-import type { BatchCompressionResult } from '../services/batchApi';
+import type { ClientBatchResult } from '../services/clientBatchCompression';
 import {
   Download,
   RefreshCw,
@@ -9,16 +9,19 @@ import {
   ArrowDownRight,
   ShieldCheck,
   SlidersHorizontal,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 interface BatchResultProps {
-  result: BatchCompressionResult;
+  result: ClientBatchResult;
   onReset: () => void;
   onEditTarget?: () => void;
 }
 
 export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps) {
   const [downloaded, setDownloaded] = useState(false);
+  const [showItems, setShowItems] = useState(true);
   const resultTitleId = useId();
 
   const formatBytes = (bytes: number) => {
@@ -56,7 +59,7 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
           {result.fileCount} images compressed under {formatTargetLabel(result.targetSizeKb)}
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-[480px] mx-auto">
-          All images compressed and bundled into a single ZIP archive (saved {formatBytes(bytesSaved)}).
+          Compressed 100% client-side in your browser (saved {formatBytes(bytesSaved)}).
         </p>
       </div>
 
@@ -112,6 +115,52 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
         </div>
       </div>
 
+      {/* Itemized List Accordion */}
+      {result.items && result.items.length > 0 && (
+        <div className="border border-neutral-200 dark:border-neutral-800 rounded-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setShowItems(!showItems)}
+            className="w-full flex items-center justify-between p-3 bg-neutral-50 dark:bg-neutral-800/50 hover:bg-neutral-100 dark:hover:bg-neutral-800 text-xs font-semibold text-neutral-700 dark:text-neutral-300 transition-colors cursor-pointer"
+          >
+            <span>View Individual Compressed Files ({result.items.length})</span>
+            {showItems ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+          </button>
+
+          {showItems && (
+            <div className="divide-y divide-neutral-100 dark:divide-neutral-800 max-h-[260px] overflow-y-auto bg-white dark:bg-neutral-900">
+              {result.items.map((item, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2.5 sm:p-3 text-xs">
+                  <div className="min-w-0 flex-grow mr-2">
+                    <p className="font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                      {item.name}
+                    </p>
+                    <div className="flex items-center gap-2 text-neutral-500 dark:text-neutral-400 text-[11px] mt-0.5">
+                      <span className="line-through opacity-70">{formatBytes(item.originalSize)}</span>
+                      <span>&rarr;</span>
+                      <span className="font-semibold text-emerald-600 dark:text-emerald-400">
+                        {formatBytes(item.compressedSize)}
+                      </span>
+                      <span>({item.percentageReduction}% smaller)</span>
+                    </div>
+                  </div>
+
+                  <a
+                    href={item.downloadUrl}
+                    download={item.name}
+                    className="p-1.5 sm:px-2 sm:py-1 rounded-md bg-neutral-100 hover:bg-emerald-50 dark:bg-neutral-800 dark:hover:bg-emerald-950/40 text-neutral-700 hover:text-emerald-600 dark:text-neutral-300 dark:hover:text-emerald-400 font-medium flex items-center gap-1 transition-colors flex-shrink-0"
+                    title={`Download ${item.name}`}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline text-[11px]">Save</span>
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-2.5 pt-2">
         <a
@@ -146,9 +195,9 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
         </button>
       </div>
 
-      <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-400 dark:text-neutral-500 pt-1">
+      <div className="flex items-center justify-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400 pt-1">
         <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-        <span>Processed securely on server without retaining files.</span>
+        <span>100% private client-side processing. Images never leave your device.</span>
       </div>
     </div>
   );

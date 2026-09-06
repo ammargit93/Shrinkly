@@ -84,12 +84,12 @@ export function ImageUploader({ onFilesSelected, multiple = true }: ImageUploade
           <Upload className="h-5 w-5 sm:h-6 sm:w-6 text-neutral-500 dark:text-neutral-400 group-hover:text-emerald-600 dark:group-hover:text-emerald-450 transition-colors" />
         </div>
 
-        <span className="text-base font-semibold text-neutral-850 dark:text-neutral-100">
+        <span className="text-base font-semibold text-neutral-900 dark:text-neutral-100">
           <span className="sm:hidden">Tap to upload image(s)</span>
           <span className="hidden sm:inline">Drop images here (single or batch)</span>
         </span>
 
-        <span className="text-xs text-neutral-400 dark:text-neutral-500 my-1.5 flex flex-wrap items-center justify-center gap-1.5 text-center">
+        <span className="text-xs text-neutral-500 dark:text-neutral-400 my-1.5 flex flex-wrap items-center justify-center gap-1.5 text-center">
           <span className="hidden sm:inline">or click to browse multiple files</span>
           <span className="hidden sm:inline">·</span>
           <span className="hidden sm:inline-flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 px-1.5 py-0.5 rounded">
@@ -104,7 +104,7 @@ export function ImageUploader({ onFilesSelected, multiple = true }: ImageUploade
           {['JPG', 'PNG', 'WebP', 'GIF'].map((fmt) => (
             <span
               key={fmt}
-              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-350"
+              className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-neutral-100 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-300"
             >
               <ImageIcon className="h-3 w-3 opacity-60" />
               {fmt}
@@ -112,7 +112,7 @@ export function ImageUploader({ onFilesSelected, multiple = true }: ImageUploade
           ))}
           <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 border border-emerald-200/50 dark:border-emerald-800/30">
             <Files className="h-3 w-3" />
-            Up to 10 images (max 20 MB)
+            Batch & Instant ZIP
           </span>
         </div>
       </label>

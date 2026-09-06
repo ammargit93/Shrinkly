@@ -20,14 +20,10 @@ export interface CompressionOptions {
  * - WebP -> WebP (.webp)
  * - GIF -> GIF (.gif)
  *
- * Quality & Dimension Strategy:
- * - If image is already <= target size: preserves original without degradation.
- * - For GIF: Deconstructs frames and quantizes palette + scales dimensions.
- * - For PNG: Canvas PNG export is lossless in browsers. To hit a target limit,
- *   it tests full resolution first, and binary searches the dimension scale factor
- *   to find the largest possible resolution <= target size, preserving transparency.
- * - For JPG & WebP: Performs adaptive binary-search on quality factor [0.05, 0.98],
- *   and progressively reduces dimensions if minimum quality still exceeds target size.
+ * Guarantees:
+ * - Output will NEVER be larger than the original input file.
+ * - If image is already <= target size: original is preserved untouched.
+ * - Iteratively optimizes quality and dimensions to hit <= targetSizeKb.
  */
 export async function compressImageToLimit(
   file: File,
@@ -51,7 +47,6 @@ export async function compressImageToLimit(
       width: undefined,
       height: undefined,
     }));
-
 
     return {
       originalSize: file.size,
@@ -85,10 +80,27 @@ export async function compressImageToLimit(
   ctx.imageSmoothingQuality = 'high';
 
   const maxIterations = options.maxIterations ?? 8;
-  const minDimension = 24;
+  const minDimension = 16;
 
   let bestBlob: Blob | null = null;
   let bestScale = 1.0;
+  let smallestBlob: Blob | null = null;
+  let smallestScale = 1.0;
+
+  // Helper to record candidate blobs
+  const recordCandidate = (blob: Blob | null, scale: number) => {
+    if (!blob) return;
+    if (!smallestBlob || blob.size < smallestBlob.size) {
+      smallestBlob = blob;
+      smallestScale = scale;
+    }
+    if (blob.size <= targetSizeBytes) {
+      if (!bestBlob || (blob.size <= targetSizeBytes && scale >= bestScale)) {
+        bestBlob = blob;
+        bestScale = scale;
+      }
+    }
+  };
 
   // 3. Strict Same-Format Compression Engine
   if (targetMime === 'image/png') {
@@ -100,14 +112,15 @@ export async function compressImageToLimit(
     ctx.drawImage(img, 0, 0, origWidth, origHeight);
 
     const fullBlob = await canvasToBlob(canvas, 'image/png');
+    recordCandidate(fullBlob, 1.0);
 
     if (fullBlob && fullBlob.size <= targetSizeBytes) {
       bestBlob = fullBlob;
       bestScale = 1.0;
     } else {
       // Binary search for the maximum scale factor that produces a PNG <= target size
-      let lowScale = 0.05;
-      let highScale = 0.98;
+      let lowScale = 0.02;
+      let highScale = 0.95;
 
       for (let i = 0; i < maxIterations; i++) {
         const midScale = Number(((lowScale + highScale) / 2).toFixed(3));
@@ -120,17 +133,18 @@ export async function compressImageToLimit(
         ctx.drawImage(img, 0, 0, w, h);
 
         const blob = await canvasToBlob(canvas, 'image/png');
-
         if (!blob) break;
+
+        recordCandidate(blob, midScale);
 
         if (blob.size <= targetSizeBytes) {
           bestBlob = blob;
           bestScale = midScale;
           // Try higher resolution
-          lowScale = midScale + 0.01;
+          lowScale = midScale + 0.02;
         } else {
           // Resolution is too large for target size
-          highScale = midScale - 0.01;
+          highScale = midScale - 0.02;
         }
 
         if (highScale < lowScale) break;
@@ -140,13 +154,12 @@ export async function compressImageToLimit(
     // --- JPG -> JPG or WebP -> WebP (Lossy Quality + Adaptive Dimension Scaling) ---
     let scale = 1.0;
 
-    while (scale >= 0.05) {
+    while (scale >= 0.04) {
       const currentWidth = Math.max(minDimension, Math.round(origWidth * scale));
       const currentHeight = Math.max(minDimension, Math.round(origHeight * scale));
 
       canvas.width = currentWidth;
       canvas.height = currentHeight;
-
       ctx.clearRect(0, 0, currentWidth, currentHeight);
 
       if (targetMime === 'image/jpeg') {
@@ -165,12 +178,13 @@ export async function compressImageToLimit(
         const blob = await canvasToBlob(canvas, targetMime, midQ);
 
         if (!blob) break;
+        recordCandidate(blob, scale);
 
         if (blob.size <= targetSizeBytes) {
           scaleBestBlob = blob;
-          lowQ = midQ + 0.01;
+          lowQ = midQ + 0.02;
         } else {
-          highQ = midQ - 0.01;
+          highQ = midQ - 0.02;
         }
 
         if (highQ < lowQ) break;
@@ -179,17 +193,19 @@ export async function compressImageToLimit(
       if (scaleBestBlob) {
         bestBlob = scaleBestBlob;
         bestScale = scale;
-        break;
+        break; // Found ideal quality that hits target at this resolution
       }
 
       // If lowest quality at this scale is still too large, calculate scale reduction
       const minQBlob = await canvasToBlob(canvas, targetMime, 0.05);
+      recordCandidate(minQBlob, scale);
+
       if (minQBlob && minQBlob.size > targetSizeBytes) {
         const ratio = targetSizeBytes / minQBlob.size;
-        const estimatedReduction = Math.max(0.2, Math.min(0.85, Math.sqrt(ratio) * 0.95));
+        const estimatedReduction = Math.max(0.15, Math.min(0.85, Math.sqrt(ratio) * 0.92));
         scale = Number((scale * estimatedReduction).toFixed(3));
       } else {
-        scale = Number((scale * 0.75).toFixed(3));
+        scale = Number((scale * 0.7).toFixed(3));
       }
 
       if (origWidth * scale < minDimension || origHeight * scale < minDimension) {
@@ -198,42 +214,43 @@ export async function compressImageToLimit(
     }
   }
 
-  // Fallback for extreme/impossible targets
-  if (!bestBlob) {
-    const finalScale = Math.max(0.05, bestScale);
-    const finalW = Math.max(minDimension, Math.round(origWidth * finalScale));
-    const finalH = Math.max(minDimension, Math.round(origHeight * finalScale));
+  // Fallback: Pick best valid candidate or smallest candidate created
+  let finalBlob: Blob = file;
+  let finalScale = 1.0;
 
-    canvas.width = finalW;
-    canvas.height = finalH;
-    ctx.clearRect(0, 0, finalW, finalH);
-
-    if (targetMime === 'image/jpeg') {
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, finalW, finalH);
-    }
-    ctx.drawImage(img, 0, 0, finalW, finalH);
-
-    bestBlob =
-      (await canvasToBlob(canvas, targetMime, targetMime === 'image/png' ? undefined : 0.05)) || file;
-    bestScale = finalScale;
+  if (bestBlob && bestBlob.size <= file.size) {
+    finalBlob = bestBlob;
+    finalScale = bestScale;
+  } else if (smallestBlob && (smallestBlob as Blob).size < file.size) {
+    finalBlob = smallestBlob;
+    finalScale = smallestScale;
+  } else {
+    // If re-encoding was larger than original file, strictly return original file
+    finalBlob = file;
+    finalScale = 1.0;
   }
 
-  const finalWidth = Math.max(1, Math.round(origWidth * bestScale));
-  const finalHeight = Math.max(1, Math.round(origHeight * bestScale));
+  // Safety invariant: Output size must NEVER exceed original file size
+  if (finalBlob.size > file.size) {
+    finalBlob = file;
+    finalScale = 1.0;
+  }
+
+  const finalWidth = Math.max(1, Math.round(origWidth * finalScale));
+  const finalHeight = Math.max(1, Math.round(origHeight * finalScale));
   const compressedName = getCompressedFileName(file.name, targetMime);
 
   const percentageReduction = Math.max(
     0,
-    Math.round(((file.size - bestBlob.size) / file.size) * 100)
+    Math.round(((file.size - finalBlob.size) / file.size) * 100)
   );
 
   return {
     originalSize: file.size,
-    compressedSize: bestBlob.size,
+    compressedSize: finalBlob.size,
     percentageReduction,
-    downloadUrl: URL.createObjectURL(bestBlob),
-    blob: bestBlob,
+    downloadUrl: URL.createObjectURL(finalBlob),
+    blob: finalBlob,
     name: compressedName,
     outputFormat: formatLabel,
     width: finalWidth,
@@ -340,4 +357,3 @@ export function getCompressedFileName(originalName: string, mimeType: string): s
 
   return `${baseName}-compressed.${ext}`;
 }
-

@@ -130,9 +130,9 @@ export function Compressor({ defaultPreset = 100 }: CompressorProps) {
 
       {/* Subtle privacy disclaimer */}
       {!isCompressing && !isSuccess && (
-        <p className="text-center text-xs text-neutral-450 dark:text-neutral-500">
-          Single images are compressed locally in your browser. Batches (up to 10 images, &lt;20MB) are processed sequentially in-memory. Read our{' '}
-          <Link href="/privacy" className="underline hover:text-neutral-600 dark:hover:text-neutral-400">
+        <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
+          All images are compressed 100% locally in your browser. Your files never leave your device. Read our{' '}
+          <Link href="/privacy" className="underline hover:text-neutral-700 dark:hover:text-neutral-300">
             Privacy Policy
           </Link>{' '}
           for details.

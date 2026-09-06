@@ -2,22 +2,21 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   X,
   Plus,
-  Server,
   Loader2,
   AlertCircle,
   Sparkles,
+  Zap,
 } from 'lucide-react';
 import type { TargetSizePreset } from '../types/compression';
 import {
-  compressBatchOnServer,
-  MAX_BATCH_IMAGES,
-  MAX_TOTAL_BATCH_SIZE,
-  MAX_SINGLE_FILE_SIZE,
-  validateBatchFiles,
-  type BatchCompressionResult,
-} from '../services/batchApi';
+  compressBatchClientSide,
+  type ClientBatchResult,
+  type BatchProgress,
+} from '../services/clientBatchCompression';
 import { TargetSize } from './TargetSize';
 import { BatchResult } from './BatchResult';
+
+export const MAX_CLIENT_BATCH_IMAGES = 20;
 
 interface BatchCompressorProps {
   initialFiles: File[];
@@ -41,7 +40,8 @@ export function BatchCompressor({
   const [customSize, setCustomSize] = useState<number>(100);
   const [customUnit, setCustomUnit] = useState<'KB' | 'MB'>('KB');
   const [status, setStatus] = useState<'selected' | 'compressing' | 'success' | 'error'>('selected');
-  const [result, setResult] = useState<BatchCompressionResult | null>(null);
+  const [progress, setProgress] = useState<BatchProgress | null>(null);
+  const [result, setResult] = useState<ClientBatchResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const addFileInputRef = useRef<HTMLInputElement>(null);
 
@@ -54,12 +54,6 @@ export function BatchCompressor({
     }));
     setFiles(list);
 
-    // Initial validation check
-    const validation = validateBatchFiles(initialFiles);
-    if (!validation.valid && validation.error) {
-      setError(validation.error);
-    }
-
     return () => {
       list.forEach((item) => URL.revokeObjectURL(item.previewUrl));
     };
@@ -67,8 +61,6 @@ export function BatchCompressor({
 
   const totalBytes = files.reduce((acc, item) => acc + item.file.size, 0);
   const totalMB = totalBytes / (1024 * 1024);
-  const isOverSizeLimit = totalBytes >= MAX_TOTAL_BATCH_SIZE;
-  const isOverCountLimit = files.length > MAX_BATCH_IMAGES;
 
   // Calculate target size in KB
   let targetSizeKb = 100;
@@ -110,13 +102,6 @@ export function BatchCompressor({
       const updated = prev.filter((f) => f.id !== id);
       if (updated.length === 0) {
         onReset();
-      } else {
-        const validation = validateBatchFiles(updated.map((u) => u.file));
-        if (validation.valid) {
-          setError(null);
-        } else {
-          setError(validation.error || null);
-        }
       }
       return updated;
     });
@@ -129,9 +114,8 @@ export function BatchCompressor({
       file.type.startsWith('image/') || file.name.match(/\.(jpe?g|png|webp|gif)$/i)
     );
 
-    const updatedRaw = [...files.map((f) => f.file), ...newFiles];
-    if (updatedRaw.length > MAX_BATCH_IMAGES) {
-      setError(`Cannot add more: maximum ${MAX_BATCH_IMAGES} images allowed in total.`);
+    if (files.length + newFiles.length > MAX_CLIENT_BATCH_IMAGES) {
+      setError(`Maximum ${MAX_CLIENT_BATCH_IMAGES} images allowed in a batch.`);
       return;
     }
 
@@ -141,24 +125,15 @@ export function BatchCompressor({
       previewUrl: URL.createObjectURL(file),
     }));
 
-    const nextFiles = [...files, ...newWithPreviews];
-    setFiles(nextFiles);
-
-    const validation = validateBatchFiles(nextFiles.map((f) => f.file));
-    if (!validation.valid) {
-      setError(validation.error || null);
-    } else {
-      setError(null);
-    }
-
+    setFiles((prev) => [...prev, ...newWithPreviews]);
+    setError(null);
     e.target.value = '';
   };
 
   const handleCompress = async () => {
     const rawFiles = files.map((f) => f.file);
-    const validation = validateBatchFiles(rawFiles);
-    if (!validation.valid) {
-      setError(validation.error || 'Invalid batch selection.');
+    if (rawFiles.length === 0) {
+      setError('Please select at least one image.');
       return;
     }
 
@@ -169,15 +144,24 @@ export function BatchCompressor({
 
     setStatus('compressing');
     setError(null);
+    setProgress({
+      currentIndex: 1,
+      totalFiles: rawFiles.length,
+      currentFileName: rawFiles[0].name,
+      stageText: 'Preparing compression...',
+      percent: 0,
+    });
 
     try {
-      const res = await compressBatchOnServer(rawFiles, targetSizeKb);
+      const res = await compressBatchClientSide(rawFiles, targetSizeKb, (prog) => {
+        setProgress(prog);
+      });
       setResult(res);
       setStatus('success');
     } catch (err) {
-      console.error('Batch compression failed:', err);
+      console.error('Client batch compression failed:', err);
       setStatus('error');
-      setError(err instanceof Error ? err.message : 'Batch compression failed on server.');
+      setError(err instanceof Error ? err.message : 'Batch compression failed.');
     }
   };
 
@@ -201,11 +185,11 @@ export function BatchCompressor({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
-              <Server className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+              <Zap className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               Batch Compression ({files.length} {files.length === 1 ? 'image' : 'images'})
             </h2>
             <p className="text-xs text-neutral-500 dark:text-neutral-400">
-              Each image will be compressed to fit strictly under your chosen target size.
+              Fast, private client-side compression. Images are bundled into a ZIP archive without uploading to any server.
             </p>
           </div>
 
@@ -219,25 +203,14 @@ export function BatchCompressor({
           </button>
         </div>
 
-        {/* Size Progress Meter */}
-        <div className="space-y-1.5 bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-lg border border-neutral-200/80 dark:border-neutral-800">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-medium text-neutral-700 dark:text-neutral-300">
-              Total Payload: <strong className={isOverSizeLimit ? 'text-red-600' : 'text-emerald-600 dark:text-emerald-400'}>{totalMB.toFixed(2)} MB</strong> / 20 MB max
-            </span>
-            <span className="text-neutral-500 dark:text-neutral-400">
-              {files.length} / {MAX_BATCH_IMAGES} images
-            </span>
-          </div>
-
-          <div className="w-full bg-neutral-200 dark:bg-neutral-700 h-2 rounded-full overflow-hidden">
-            <div
-              className={`h-full transition-all duration-300 ${
-                isOverSizeLimit ? 'bg-red-500' : totalMB > 16 ? 'bg-amber-500' : 'bg-emerald-500'
-              }`}
-              style={{ width: `${Math.min(100, (totalBytes / MAX_TOTAL_BATCH_SIZE) * 100)}%` }}
-            />
-          </div>
+        {/* Batch Info Meter */}
+        <div className="flex items-center justify-between text-xs bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-lg border border-neutral-200/80 dark:border-neutral-800">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">
+            Total Selected: <strong className="text-emerald-600 dark:text-emerald-400">{totalMB.toFixed(2)} MB</strong>
+          </span>
+          <span className="text-neutral-500 dark:text-neutral-400 font-medium">
+            {files.length} of {MAX_CLIENT_BATCH_IMAGES} images max
+          </span>
         </div>
       </div>
 
@@ -249,65 +222,78 @@ export function BatchCompressor({
         </div>
       )}
 
-      {/* File Queue List */}
-      <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
-        {files.map((item, index) => {
-          const isFileOversized = item.file.size > MAX_SINGLE_FILE_SIZE;
-          return (
+      {/* Compressing Progress State */}
+      {status === 'compressing' && progress && (
+        <div className="p-4 sm:p-5 rounded-xl border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/50 dark:bg-emerald-950/20 space-y-3">
+          <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-emerald-900 dark:text-emerald-100">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-emerald-600 dark:text-emerald-400" />
+              <span>{progress.stageText}</span>
+            </div>
+            <span>{progress.percent}%</span>
+          </div>
+
+          <div className="w-full bg-emerald-200/70 dark:bg-emerald-950 h-2.5 rounded-full overflow-hidden">
             <div
-              key={item.id}
-              className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl border transition-all ${
-                isFileOversized
-                  ? 'border-red-300 bg-red-50/60 dark:border-red-800/80 dark:bg-red-950/30'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/70 hover:bg-neutral-100/80 dark:hover:bg-neutral-800 shadow-xs'
-              }`}
-            >
-              <div className="flex items-center gap-3 sm:gap-3.5 overflow-hidden min-w-0 mr-2">
-                <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 w-5 text-center flex-shrink-0">
-                  {index + 1}
-                </span>
-                <img
-                  src={item.previewUrl}
-                  alt={item.file.name}
-                  className="h-11 w-11 sm:h-12 sm:w-12 object-cover rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 flex-shrink-0"
-                />
-                <div className="min-w-0 flex-grow">
-                  <p className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
-                    {item.file.name}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
-                    <span className="font-medium text-neutral-700 dark:text-neutral-300">
-                      {formatBytes(item.file.size)}
-                    </span>
-                    <span>·</span>
-                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-neutral-200/80 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
-                      {getFormatLabel(item.file.type, item.file.name)}
-                    </span>
-                    {isFileOversized && (
-                      <span className="text-red-600 dark:text-red-400 font-semibold">
-                        (Exceeds 10 MB limit)
-                      </span>
-                    )}
-                  </div>
+              className="bg-emerald-600 dark:bg-emerald-500 h-full transition-all duration-200 ease-out"
+              style={{ width: `${Math.max(5, progress.percent)}%` }}
+            />
+          </div>
+
+          <div className="flex items-center justify-between text-[11px] text-emerald-700 dark:text-emerald-300">
+            <span>File {progress.currentIndex} of {progress.totalFiles}</span>
+            <span className="truncate max-w-[200px] sm:max-w-[280px]">{progress.currentFileName}</span>
+          </div>
+        </div>
+      )}
+
+      {/* File Queue List */}
+      <div className="space-y-2.5 max-h-[280px] overflow-y-auto pr-1">
+        {files.map((item, index) => (
+          <div
+            key={item.id}
+            className="flex items-center justify-between p-3 sm:p-3.5 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/70 hover:bg-neutral-100/80 dark:hover:bg-neutral-800 transition-all shadow-xs"
+          >
+            <div className="flex items-center gap-3 sm:gap-3.5 overflow-hidden min-w-0 mr-2">
+              <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 w-5 text-center flex-shrink-0">
+                {index + 1}
+              </span>
+              <img
+                src={item.previewUrl}
+                alt={item.file.name}
+                className="h-11 w-11 sm:h-12 sm:w-12 object-cover rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 flex-shrink-0"
+              />
+              <div className="min-w-0 flex-grow">
+                <p className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
+                  {item.file.name}
+                </p>
+                <div className="flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                  <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                    {formatBytes(item.file.size)}
+                  </span>
+                  <span>·</span>
+                  <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-neutral-200/80 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                    {getFormatLabel(item.file.type, item.file.name)}
+                  </span>
                 </div>
               </div>
-
-              <button
-                type="button"
-                onClick={() => handleRemoveFile(item.id)}
-                disabled={status === 'compressing'}
-                className="p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-700 transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
-                title="Remove image from batch"
-                aria-label="Remove image"
-              >
-                <X className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
-              </button>
             </div>
-          );
-        })}
+
+            <button
+              type="button"
+              onClick={() => handleRemoveFile(item.id)}
+              disabled={status === 'compressing'}
+              className="p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-700 transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
+              title="Remove image from batch"
+              aria-label="Remove image"
+            >
+              <X className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
+            </button>
+          </div>
+        ))}
 
         {/* Add more button */}
-        {files.length < MAX_BATCH_IMAGES && (
+        {files.length < MAX_CLIENT_BATCH_IMAGES && (
           <div>
             <input
               ref={addFileInputRef}
@@ -324,7 +310,7 @@ export function BatchCompressor({
               className="w-full py-2.5 px-3 border border-dashed border-neutral-300 dark:border-neutral-700 hover:border-emerald-500 dark:hover:border-emerald-500 text-xs font-semibold text-neutral-600 hover:text-emerald-600 dark:text-neutral-300 dark:hover:text-emerald-400 rounded-lg flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
-              Add more images ({MAX_BATCH_IMAGES - files.length} remaining)
+              Add more images ({MAX_CLIENT_BATCH_IMAGES - files.length} remaining)
             </button>
           </div>
         )}
@@ -348,7 +334,7 @@ export function BatchCompressor({
         <button
           type="button"
           onClick={handleCompress}
-          disabled={status === 'compressing' || isOverSizeLimit || isOverCountLimit || files.length === 0}
+          disabled={status === 'compressing' || files.length === 0}
           className="w-full py-3.5 px-4 text-base sm:text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-emerald-600 dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2"
         >
           {status === 'compressing' ? (
