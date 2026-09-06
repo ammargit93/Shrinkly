@@ -14,6 +14,11 @@ func main() {
 			"message": "Hello, World!",
 		})
 	})
+	app.Get("/api/health", func(c fiber.Ctx) error {
+		return c.JSON(fiber.Map{
+			"status": "OK",
+		})
+	})
 
-	log.Fatal(app.Listen(":3000"))
+	log.Fatal(app.Listen(":8080"))
 }
