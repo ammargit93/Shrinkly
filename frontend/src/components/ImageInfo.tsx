@@ -39,7 +39,7 @@ export function ImageInfo({ info, onClear }: ImageInfoProps) {
           )}
         </div>
         <div className="min-w-0 flex-grow">
-          <p className="text-xs sm:text-sm font-semibold text-neutral-850 dark:text-neutral-150 truncate">
+          <p className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
             {info.name}
           </p>
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 sm:mt-1">

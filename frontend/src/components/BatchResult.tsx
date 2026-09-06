@@ -52,7 +52,7 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
           <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
           <span>Batch target reached (&le; {formatTargetLabel(result.targetSizeKb)} per image)</span>
         </div>
-        <h2 id={resultTitleId} className="text-base sm:text-xl font-bold text-neutral-850 dark:text-neutral-100">
+        <h2 id={resultTitleId} className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-100">
           {result.fileCount} images compressed under {formatTargetLabel(result.targetSizeKb)}
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-[480px] mx-auto">

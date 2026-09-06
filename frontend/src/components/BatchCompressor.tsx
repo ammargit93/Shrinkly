@@ -93,6 +93,14 @@ export function BatchCompressor({
     return `${(bytes / 1024).toFixed(1)} KB`;
   };
 
+  const getFormatLabel = (mimeType: string, filename: string) => {
+    if (mimeType.includes('gif') || filename.endsWith('.gif')) return 'GIF';
+    if (mimeType.includes('jpeg') || mimeType.includes('jpg') || filename.match(/\.jpe?g$/i)) return 'JPEG';
+    if (mimeType.includes('png') || filename.endsWith('.png')) return 'PNG';
+    if (mimeType.includes('webp') || filename.endsWith('.webp')) return 'WebP';
+    return 'IMAGE';
+  };
+
   const handleRemoveFile = useCallback((id: string) => {
     setFiles((prev) => {
       const target = prev.find((f) => f.id === id);
@@ -192,7 +200,7 @@ export function BatchCompressor({
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-neutral-850 dark:text-neutral-100 flex items-center gap-2">
+            <h2 className="text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-100 flex items-center gap-2">
               <Server className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
               Batch Compression ({files.length} {files.length === 1 ? 'image' : 'images'})
             </h2>
@@ -212,12 +220,12 @@ export function BatchCompressor({
         </div>
 
         {/* Size Progress Meter */}
-        <div className="space-y-1.5 bg-neutral-50 dark:bg-neutral-800/50 p-3 rounded-lg border border-neutral-100 dark:border-neutral-800">
+        <div className="space-y-1.5 bg-neutral-50 dark:bg-neutral-800/60 p-3 rounded-lg border border-neutral-200/80 dark:border-neutral-800">
           <div className="flex items-center justify-between text-xs">
             <span className="font-medium text-neutral-700 dark:text-neutral-300">
               Total Payload: <strong className={isOverSizeLimit ? 'text-red-600' : 'text-emerald-600 dark:text-emerald-400'}>{totalMB.toFixed(2)} MB</strong> / 20 MB max
             </span>
-            <span className="text-neutral-400 dark:text-neutral-500">
+            <span className="text-neutral-500 dark:text-neutral-400">
               {files.length} / {MAX_BATCH_IMAGES} images
             </span>
           </div>
@@ -242,39 +250,45 @@ export function BatchCompressor({
       )}
 
       {/* File Queue List */}
-      <div className="space-y-2 max-h-[280px] overflow-y-auto pr-1">
+      <div className="space-y-2.5 max-h-[300px] overflow-y-auto pr-1">
         {files.map((item, index) => {
           const isFileOversized = item.file.size > MAX_SINGLE_FILE_SIZE;
           return (
             <div
               key={item.id}
-              className={`flex items-center justify-between p-2.5 sm:p-3 rounded-lg border transition-all ${
+              className={`flex items-center justify-between p-3 sm:p-3.5 rounded-xl border transition-all ${
                 isFileOversized
-                  ? 'border-red-300 bg-red-50/40 dark:border-red-900/50 dark:bg-red-950/20'
-                  : 'border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-850'
+                  ? 'border-red-300 bg-red-50/60 dark:border-red-800/80 dark:bg-red-950/30'
+                  : 'border-neutral-200 dark:border-neutral-800 bg-neutral-50/80 dark:bg-neutral-800/70 hover:bg-neutral-100/80 dark:hover:bg-neutral-800 shadow-xs'
               }`}
             >
-              <div className="flex items-center gap-3 overflow-hidden min-w-0 mr-2">
-                <span className="text-[11px] font-semibold text-neutral-400 w-4 text-center">
+              <div className="flex items-center gap-3 sm:gap-3.5 overflow-hidden min-w-0 mr-2">
+                <span className="text-xs font-bold text-neutral-400 dark:text-neutral-500 w-5 text-center flex-shrink-0">
                   {index + 1}
                 </span>
                 <img
                   src={item.previewUrl}
                   alt={item.file.name}
-                  className="h-10 w-10 sm:h-11 sm:w-11 object-cover rounded-md border border-neutral-200 dark:border-neutral-700 bg-neutral-100 flex-shrink-0"
+                  className="h-11 w-11 sm:h-12 sm:w-12 object-cover rounded-lg border border-neutral-200 dark:border-neutral-700 bg-neutral-100 dark:bg-neutral-900 flex-shrink-0"
                 />
                 <div className="min-w-0 flex-grow">
-                  <p className="text-xs sm:text-sm font-medium text-neutral-800 dark:text-neutral-200 truncate">
+                  <p className="text-xs sm:text-sm font-semibold text-neutral-900 dark:text-neutral-100 truncate">
                     {item.file.name}
                   </p>
-                  <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    {formatBytes(item.file.size)}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+                    <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                      {formatBytes(item.file.size)}
+                    </span>
+                    <span>·</span>
+                    <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-semibold bg-neutral-200/80 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300">
+                      {getFormatLabel(item.file.type, item.file.name)}
+                    </span>
                     {isFileOversized && (
-                      <span className="ml-2 text-red-600 dark:text-red-400 font-semibold">
+                      <span className="text-red-600 dark:text-red-400 font-semibold">
                         (Exceeds 10 MB limit)
                       </span>
                     )}
-                  </p>
+                  </div>
                 </div>
               </div>
 
@@ -282,10 +296,11 @@ export function BatchCompressor({
                 type="button"
                 onClick={() => handleRemoveFile(item.id)}
                 disabled={status === 'compressing'}
-                className="p-1.5 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors cursor-pointer disabled:opacity-50"
-                title="Remove image"
+                className="p-2 text-neutral-400 hover:text-red-600 dark:hover:text-red-400 rounded-lg hover:bg-neutral-200/60 dark:hover:bg-neutral-700 transition-colors cursor-pointer disabled:opacity-50 flex-shrink-0"
+                title="Remove image from batch"
+                aria-label="Remove image"
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 sm:h-4.5 sm:w-4.5" />
               </button>
             </div>
           );
