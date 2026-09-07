@@ -1,0 +1,25 @@
+{
+  "name": "Shrinkly — Online Image Compressor",
+  "short_name": "Shrinkly",
+  "description": "Compress JPG, PNG, WebP, and animated GIF images to exact target file sizes online.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "categories": ["utilities", "photo", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

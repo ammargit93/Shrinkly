@@ -1,30 +1,48 @@
 import { Link } from './Router';
 
+const HEADER_CONFIG = {
+  headerPadding: 'py-3 sm:py-3.5 px-4 sm:px-6',
+  logoSize: 'h-9 w-9 sm:h-10 sm:w-10',
+  logoSizePx: 42,
+  brandTextSize: 'text-lg sm:text-xl font-bold tracking-tight',
+  brandGap: 'gap-2 sm:gap-2.5',
+  navLinkClasses: 'py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-medium',
+  navGap: 'gap-1 sm:gap-2',
+} as const;
+
 export function Header() {
   return (
-    <header className="border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xs py-3 sm:py-4 px-4 sm:px-6 sticky top-0 z-20">
+    <header
+      className={`border-b border-neutral-200 dark:border-neutral-800 bg-white/95 dark:bg-neutral-950/95 backdrop-blur-xs sticky top-0 z-20 ${HEADER_CONFIG.headerPadding}`}
+    >
       <div className="max-w-[850px] mx-auto flex items-center justify-between">
         <Link
           href="/"
-          className="flex items-center gap-2 text-base sm:text-lg font-bold text-neutral-900 dark:text-neutral-50 tracking-tight hover:opacity-85 transition-opacity"
+          className={`flex items-center text-neutral-900 dark:text-neutral-50 hover:opacity-85 transition-opacity ${HEADER_CONFIG.brandGap} ${HEADER_CONFIG.brandTextSize}`}
+          aria-label="Shrinkly Homepage"
         >
           <img
             src="/logo.png"
             alt="Shrinkly Logo"
-            className="h-8 w-8 sm:h-10 sm:w-10 rounded-md object-contain"
+            width={HEADER_CONFIG.logoSizePx}
+            height={HEADER_CONFIG.logoSizePx}
+            className={`rounded-lg object-contain shrink-0 ${HEADER_CONFIG.logoSize}`}
           />
           <span>Shrinkly</span>
         </Link>
-        <nav className="flex items-center gap-1 sm:gap-2">
+        <nav
+          aria-label="Main navigation"
+          className={`flex items-center ${HEADER_CONFIG.navGap}`}
+        >
           <Link
             href="/faq"
-            className="py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100/70 dark:hover:bg-neutral-900/80 rounded-lg transition-colors"
+            className={`text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100/70 dark:hover:bg-neutral-900/80 rounded-lg transition-colors ${HEADER_CONFIG.navLinkClasses}`}
           >
             FAQ
           </Link>
           <Link
             href="/privacy"
-            className="py-1.5 px-2.5 sm:px-3 text-xs sm:text-sm font-medium text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100/70 dark:hover:bg-neutral-900/80 rounded-lg transition-colors"
+            className={`text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100 hover:bg-neutral-100/70 dark:hover:bg-neutral-900/80 rounded-lg transition-colors ${HEADER_CONFIG.navLinkClasses}`}
           >
             Privacy
           </Link>
@@ -33,4 +51,5 @@ export function Header() {
     </header>
   );
 }
+
 export default Header;
