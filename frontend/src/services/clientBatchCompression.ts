@@ -10,7 +10,7 @@ export interface ClientBatchResult {
   compressedSize: number;
   percentageReduction: number;
   fileCount: number;
-  targetSizeKb: number;
+  targetSizeKb: number | 'auto';
   items: CompressionResult[];
 }
 
@@ -42,14 +42,14 @@ export function yieldToMainThread(): Promise<void> {
  */
 export async function compressBatchClientSide(
   files: File[],
-  targetSizeKb: number,
+  targetSizeKb: number | 'auto',
   onProgress?: (progress: BatchProgress) => void
 ): Promise<ClientBatchResult> {
   if (!files || files.length === 0) {
     throw new Error('Please select at least one image to compress.');
   }
 
-  if (isNaN(targetSizeKb) || targetSizeKb <= 0) {
+  if (targetSizeKb !== 'auto' && (isNaN(targetSizeKb) || targetSizeKb <= 0)) {
     throw new Error('Please specify a valid target size greater than 0.');
   }
 

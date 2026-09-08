@@ -33,7 +33,7 @@ interface FileWithPreview {
 export function BatchCompressor({
   initialFiles,
   onReset,
-  defaultPreset = 100,
+  defaultPreset = 'auto',
 }: BatchCompressorProps) {
   const [files, setFiles] = useState<FileWithPreview[]>([]);
   const [preset, setPreset] = useState<TargetSizePreset>(defaultPreset);
@@ -62,15 +62,20 @@ export function BatchCompressor({
   const totalBytes = files.reduce((acc, item) => acc + item.file.size, 0);
   const totalMB = totalBytes / (1024 * 1024);
 
-  // Calculate target size in KB
-  let targetSizeKb = 100;
+  // Calculate target size in KB or 'auto'
+  let targetSizeKb: number | 'auto' = 'auto';
   if (preset === 'custom') {
     targetSizeKb = customUnit === 'MB' ? customSize * 1024 : customSize;
+  } else if (preset === 'auto') {
+    targetSizeKb = 'auto';
   } else {
     targetSizeKb = preset;
   }
 
   const formatTargetLabel = () => {
+    if (preset === 'auto') {
+      return 'Auto (100% Quality)';
+    }
     if (preset === 'custom') {
       return `${customSize} ${customUnit}`;
     }
@@ -137,7 +142,7 @@ export function BatchCompressor({
       return;
     }
 
-    if (isNaN(targetSizeKb) || targetSizeKb <= 0) {
+    if (targetSizeKb !== 'auto' && (isNaN(targetSizeKb) || targetSizeKb <= 0)) {
       setError('Please enter a valid target size greater than 0.');
       return;
     }
@@ -340,12 +345,20 @@ export function BatchCompressor({
           {status === 'compressing' ? (
             <>
               <Loader2 className="h-5 w-5 animate-spin" />
-              <span>Compressing {files.length} images to &le; {formatTargetLabel()}...</span>
+              <span>
+                {preset === 'auto'
+                  ? `Compressing ${files.length} images (Auto - 100% Quality)...`
+                  : `Compressing ${files.length} images to ≤ ${formatTargetLabel()}...`}
+              </span>
             </>
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              <span>Compress {files.length} Images under {formatTargetLabel()} (ZIP)</span>
+              <span>
+                {preset === 'auto'
+                  ? `Compress ${files.length} Images (Auto - 100% Quality ZIP)`
+                  : `Compress ${files.length} Images under ${formatTargetLabel()} (ZIP)`}
+              </span>
             </>
           )}
         </button>

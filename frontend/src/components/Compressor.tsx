@@ -14,7 +14,7 @@ interface CompressorProps {
   defaultPreset?: TargetSizePreset;
 }
 
-export function Compressor({ defaultPreset = 100 }: CompressorProps) {
+export function Compressor({ defaultPreset = 'auto' }: CompressorProps) {
   const [batchFiles, setBatchFiles] = useState<File[] | null>(null);
 
   const {

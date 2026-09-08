@@ -97,7 +97,7 @@ export function Home() {
 
       {/* Compressor Tool */}
       <section aria-label="Image Compression Tool">
-        <Compressor defaultPreset={100} />
+        <Compressor defaultPreset="auto" />
       </section>
 
       {/* Feature Highlights Banner */}

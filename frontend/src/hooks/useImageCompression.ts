@@ -12,7 +12,7 @@ import { getGifInfo } from '../utils/gifCompression';
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
 
-export function useImageCompression(defaultPreset: TargetSizePreset = 100) {
+export function useImageCompression(defaultPreset: TargetSizePreset = 'auto') {
   const [status, setStatus] = useState<CompressionStatus>('idle');
   const [stage, setStage] = useState<CompressionStage>('preparing');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -190,19 +190,24 @@ export function useImageCompression(defaultPreset: TargetSizePreset = 100) {
       // Clean up previous download URL before creating a new one
       cleanupDownloadUrl();
 
-      // Calculate target size in KB
-      let targetSizeKb = 100;
+      // Calculate target size in KB or 'auto'
+      let targetSizeKb: number | 'auto' = 'auto';
       if (activePreset === 'custom') {
         targetSizeKb = activeCustomUnit === 'MB' ? activeCustomSize * 1024 : activeCustomSize;
+        if (isNaN(targetSizeKb) || targetSizeKb <= 0) {
+          setStatus('error');
+          setError('Invalid target size. Please specify a value greater than 0.');
+          return;
+        }
+      } else if (activePreset === 'auto') {
+        targetSizeKb = 'auto';
       } else {
         targetSizeKb = activePreset;
-      }
-
-      // Validate target size
-      if (isNaN(targetSizeKb) || targetSizeKb <= 0) {
-        setStatus('error');
-        setError('Invalid target size. Please specify a value greater than 0.');
-        return;
+        if (isNaN(targetSizeKb) || targetSizeKb <= 0) {
+          setStatus('error');
+          setError('Invalid target size. Please specify a value greater than 0.');
+          return;
+        }
       }
 
       try {

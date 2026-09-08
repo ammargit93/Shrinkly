@@ -6,7 +6,7 @@ import { compressImageToLimit } from '../utils/imageCompression';
  */
 export async function compressImage(
   file: File,
-  targetSizeKb: number
+  targetSizeKb: number | 'auto'
 ): Promise<CompressionResult> {
   return compressImageToLimit(file, targetSizeKb);
 }

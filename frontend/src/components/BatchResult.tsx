@@ -37,7 +37,10 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
     setDownloaded(true);
   };
 
-  const formatTargetLabel = (kb: number) => {
+  const formatTargetLabel = (kb: number | 'auto') => {
+    if (kb === 'auto') {
+      return 'Auto (100% Quality)';
+    }
     if (kb >= 1024) {
       return `${(kb / 1024).toFixed(1).replace(/\.0$/, '')} MB`;
     }
@@ -53,10 +56,16 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
       <div className="text-center space-y-1.5">
         <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200/60 dark:border-emerald-800/40 mb-1">
           <CheckCircle2 className="h-3.5 w-3.5 flex-shrink-0" />
-          <span>Batch target reached (&le; {formatTargetLabel(result.targetSizeKb)} per image)</span>
+          <span>
+            {result.targetSizeKb === 'auto'
+              ? 'Batch compressed with 100% quality'
+              : `Batch target reached (≤ ${formatTargetLabel(result.targetSizeKb)} per image)`}
+          </span>
         </div>
         <h2 id={resultTitleId} className="text-base sm:text-xl font-bold text-neutral-900 dark:text-neutral-100">
-          {result.fileCount} images compressed under {formatTargetLabel(result.targetSizeKb)}
+          {result.targetSizeKb === 'auto'
+            ? `${result.fileCount} images compressed with 100% Quality`
+            : `${result.fileCount} images compressed under ${formatTargetLabel(result.targetSizeKb)}`}
         </h2>
         <p className="text-xs sm:text-sm text-neutral-500 dark:text-neutral-400 max-w-[480px] mx-auto">
           Compressed 100% client-side in your browser (saved {formatBytes(bytesSaved)}).

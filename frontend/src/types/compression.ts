@@ -8,7 +8,7 @@ export interface ImageInfo {
   frameCount?: number;
 }
 
-export type TargetSizePreset = 20 | 50 | 100 | 200 | 500 | 1000 | 'custom';
+export type TargetSizePreset = 'auto' | 20 | 50 | 100 | 200 | 500 | 1000 | 'custom';
 
 export type CompressionStatus = 'idle' | 'selected' | 'compressing' | 'success' | 'error';
 

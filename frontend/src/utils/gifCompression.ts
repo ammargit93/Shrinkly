@@ -199,9 +199,56 @@ export async function getGifInfo(
  */
 export async function compressGifToLimit(
   file: File,
-  targetSizeKb: number,
+  targetSizeKb: number | 'auto',
   options: GifCompressionOptions = {}
 ): Promise<CompressionResult> {
+  // --- Auto Mode: Smart GIF compression retaining 100% resolution and 256-color palette ---
+  if (targetSizeKb === 'auto') {
+    options.onStageChange?.('decoding');
+    const buffer = await file.arrayBuffer();
+    const parsed = parseGIF(buffer);
+    const rawFrames = decompressFrames(parsed, true);
+
+    if (!rawFrames || rawFrames.length === 0) {
+      throw new Error('Unable to decode GIF frames. File might be corrupted.');
+    }
+
+    const origWidth = parsed.lsd.width || rawFrames[0].dims.width;
+    const origHeight = parsed.lsd.height || rawFrames[0].dims.height;
+
+    options.onStageChange?.('quantizing');
+    const compositeFrames = buildCompositeFrames(rawFrames, origWidth, origHeight);
+
+    options.onStageChange?.('optimizing');
+    // Full resolution (1.0 scale), all frames preserved, full 256 colors
+    const encoded = encodeGif(compositeFrames, origWidth, origHeight, 1.0, 256);
+
+    options.onStageChange?.('finalizing');
+
+    const isSmaller = encoded.bytes.length < file.size;
+    const finalBlob = isSmaller
+      ? new Blob([encoded.bytes as unknown as BlobPart], { type: 'image/gif' })
+      : file;
+    const baseName = file.name.replace(/\.[^/.]+$/, '');
+    const compressedName = `${baseName}-compressed.gif`;
+    const percentageReduction = Math.max(
+      0,
+      Math.round(((file.size - finalBlob.size) / file.size) * 100)
+    );
+
+    return {
+      originalSize: file.size,
+      compressedSize: finalBlob.size,
+      percentageReduction,
+      downloadUrl: URL.createObjectURL(finalBlob),
+      blob: finalBlob,
+      name: compressedName,
+      outputFormat: 'GIF',
+      width: origWidth,
+      height: origHeight,
+    };
+  }
+
   const targetSizeBytes = Math.max(1, targetSizeKb * 1024);
 
   // 1. If already within limit, return original

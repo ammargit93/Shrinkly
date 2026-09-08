@@ -21,6 +21,7 @@ export function TargetSize({
   onCustomUnitChange,
 }: TargetSizeProps) {
   const presets: { label: string; value: TargetSizePreset }[] = [
+    { label: 'Auto', value: 'auto' },
     { label: '20 KB', value: 20 },
     { label: '50 KB', value: 50 },
     { label: '100 KB', value: 100 },
@@ -31,16 +32,17 @@ export function TargetSize({
   ];
 
   // Calculate target bytes for reduction hint
-  let targetBytes = 100 * 1024;
-  if (preset === 'custom') {
-    targetBytes = (customUnit === 'MB' ? customSize * 1024 : customSize) * 1024;
-  } else {
-    targetBytes = preset * 1024;
-  }
-
   let reductionPercentage = 0;
-  if (currentSizeBytes && currentSizeBytes > targetBytes) {
-    reductionPercentage = Math.round(((currentSizeBytes - targetBytes) / currentSizeBytes) * 100);
+  if (preset === 'custom') {
+    const targetBytes = (customUnit === 'MB' ? customSize * 1024 : customSize) * 1024;
+    if (currentSizeBytes && currentSizeBytes > targetBytes) {
+      reductionPercentage = Math.round(((currentSizeBytes - targetBytes) / currentSizeBytes) * 100);
+    }
+  } else if (preset !== 'auto') {
+    const targetBytes = preset * 1024;
+    if (currentSizeBytes && currentSizeBytes > targetBytes) {
+      reductionPercentage = Math.round(((currentSizeBytes - targetBytes) / currentSizeBytes) * 100);
+    }
   }
 
   return (
@@ -49,27 +51,30 @@ export function TargetSize({
         <label className="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
           Target File Size
         </label>
-        {reductionPercentage > 0 && (
+        {preset === 'auto' ? (
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-650 dark:text-emerald-400">
+            <Sparkles className="h-3 w-3 flex-shrink-0" />
+            <span>Auto · Retains 100% quality</span>
+          </span>
+        ) : reductionPercentage > 0 ? (
           <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-650 dark:text-emerald-400">
             <Sparkles className="h-3 w-3 flex-shrink-0" />
             <span>Targeting ~{reductionPercentage}% reduction</span>
           </span>
-        )}
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
+      <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-8 gap-2">
         {presets.map((p) => {
           const isActive = preset === p.value;
-          const isCustom = p.value === 'custom';
           return (
             <button
               key={p.value.toString()}
               type="button"
               onClick={() => onPresetChange(p.value)}
-              className={`py-2.5 px-2 sm:px-3 text-xs sm:text-sm font-medium border rounded-lg transition-all duration-150 cursor-pointer active:scale-[0.98]
-                ${isCustom ? 'col-span-3 sm:col-span-2 md:col-span-1' : 'col-span-1'}
+              className={`py-2.5 px-2 text-xs sm:text-sm font-medium border rounded-lg transition-all duration-150 cursor-pointer active:scale-[0.98] text-center
                 ${isActive
-                  ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-350 shadow-xs'
+                  ? 'border-emerald-600 dark:border-emerald-500 bg-emerald-50 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-350 shadow-xs font-semibold'
                   : 'border-neutral-200 dark:border-neutral-800 bg-white hover:bg-neutral-50 dark:bg-neutral-900 dark:hover:bg-neutral-800 text-neutral-700 dark:text-neutral-300'
                 }
               `}
