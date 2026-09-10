@@ -8,6 +8,7 @@ import type {
 } from '../types/compression';
 import { compressImageToLimit } from '../utils/imageCompression';
 import { getGifInfo } from '../utils/gifCompression';
+import { logUsageEvent } from '../services/usageLogger';
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 const SUPPORTED_TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
@@ -210,13 +211,27 @@ export function useImageCompression(defaultPreset: TargetSizePreset = 'auto') {
         }
       }
 
+      const startTime = performance.now();
+
       try {
         const compressionResult = await compressImageToLimit(imageFile, targetSizeKb, {
           onStageChange: setStage,
         });
+        const durationMs = Math.round(performance.now() - startTime);
+
         downloadUrlRef.current = compressionResult.downloadUrl;
         setResult(compressionResult);
         setStatus('success');
+
+        // Record tool usage log
+        logUsageEvent('single_compress', {
+          format: compressionResult.outputFormat || imageFile.type.split('/')[1] || 'IMAGE',
+          originalSize: compressionResult.originalSize,
+          compressedSize: compressionResult.compressedSize,
+          percentageReduction: compressionResult.percentageReduction,
+          targetSizeKb,
+          durationMs,
+        });
       } catch (err) {
         console.error(err);
         setStatus('error');
@@ -225,6 +240,7 @@ export function useImageCompression(defaultPreset: TargetSizePreset = 'auto') {
     },
     [imageFile, preset, customSize, customUnit, cleanupDownloadUrl]
   );
+
 
   const recompress = useCallback(
     (newPreset?: TargetSizePreset) => {

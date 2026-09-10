@@ -1,6 +1,8 @@
+import { useEffect, useRef } from 'react';
 import { RouterProvider, useRouter, Link } from './components/Router';
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { logUsageEvent } from './services/usageLogger';
 
 // Pages
 import { Home } from './pages/Home';
@@ -9,9 +11,19 @@ import { Privacy } from './pages/Privacy';
 import { Terms } from './pages/Terms';
 import { About } from './pages/About';
 import { FAQ } from './pages/FAQ';
+import { LogViewer } from './pages/LogViewer';
 
 function RouteDispatcher() {
   const { path } = useRouter();
+  const lastTrackedPath = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Avoid logging duplicate visits to the exact same route on consecutive render
+    if (lastTrackedPath.current !== path) {
+      lastTrackedPath.current = path;
+      logUsageEvent('page_visit', { path });
+    }
+  }, [path]);
 
   switch (path) {
     case '/':
@@ -34,6 +46,10 @@ function RouteDispatcher() {
       return <About />;
     case '/faq':
       return <FAQ />;
+    case '/log.txt':
+    case '/log':
+    case '/logs':
+      return <LogViewer />;
     default:
       return (
         <div className="max-w-[500px] mx-auto text-center py-12 sm:py-16 px-4 space-y-4">
@@ -71,3 +87,4 @@ export function App() {
 }
 
 export default App;
+

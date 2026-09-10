@@ -12,6 +12,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { logUsageEvent } from '../services/usageLogger';
 
 interface BatchResultProps {
   result: ClientBatchResult;
@@ -35,7 +36,21 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
 
   const handleDownload = () => {
     setDownloaded(true);
+    logUsageEvent('batch_download', {
+      fileCount: result.fileCount,
+      compressedSize: result.compressedSize,
+      targetSizeKb: result.targetSizeKb,
+    });
   };
+
+  const handleItemSave = (item: (typeof result.items)[0]) => {
+    logUsageEvent('batch_item_save', {
+      name: item.name,
+      format: item.outputFormat,
+      compressedSize: item.compressedSize,
+    });
+  };
+
 
   const formatTargetLabel = (kb: number | 'auto') => {
     if (kb === 'auto') {
@@ -157,6 +172,7 @@ export function BatchResult({ result, onReset, onEditTarget }: BatchResultProps)
                   <a
                     href={item.downloadUrl}
                     download={item.name}
+                    onClick={() => handleItemSave(item)}
                     className="p-1.5 sm:px-2 sm:py-1 rounded-md bg-neutral-100 hover:bg-emerald-50 dark:bg-neutral-800 dark:hover:bg-emerald-950/40 text-neutral-700 hover:text-emerald-600 dark:text-neutral-300 dark:hover:text-emerald-400 font-medium flex items-center gap-1 transition-colors flex-shrink-0"
                     title={`Download ${item.name}`}
                   >

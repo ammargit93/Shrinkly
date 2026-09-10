@@ -17,6 +17,9 @@ export function Footer() {
           <Link href="/terms" className="py-1 px-1 hover:text-neutral-700 dark:hover:text-neutral-300 transition-colors">
             Terms
           </Link>
+          <Link href="/log.txt" className="py-1 px-1 hover:text-emerald-600 dark:hover:text-emerald-400 font-mono text-[11px] transition-colors" title="View usage log text">
+            log.txt
+          </Link>
         </nav>
         <p className="text-center sm:text-right">
           © {new Date().getFullYear()} Shrinkly. 100% Client-Side Image Optimizer.
