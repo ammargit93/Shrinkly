@@ -1,6 +1,9 @@
 import { parseGIF, decompressFrames, type ParsedFrame } from 'gifuct-js';
-import { GIFEncoder, quantize, applyPalette } from 'gifenc';
+import gifenc from 'gifenc';
 import type { CompressionResult, CompressionStage } from '../types/compression';
+
+const GIFEncoder = gifenc.GIFEncoder ?? gifenc;
+const { quantize, applyPalette } = gifenc;
 
 export interface GifCompressionOptions {
   onStageChange?: (stage: CompressionStage) => void;

@@ -1,4 +1,6 @@
-import { quantize, applyPalette } from 'gifenc';
+import gifenc from 'gifenc';
+
+const { quantize, applyPalette } = gifenc;
 
 const CRC_TABLE = new Uint32Array(256);
 for (let n = 0; n < 256; n++) {

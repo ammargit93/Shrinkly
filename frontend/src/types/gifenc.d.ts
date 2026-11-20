@@ -1,4 +1,11 @@
 declare module 'gifenc' {
+  const gifenc: {
+    GIFEncoder: typeof GIFEncoder;
+    quantize: typeof quantize;
+    applyPalette: typeof applyPalette;
+  };
+  export default gifenc;
+
   export interface QuantizeOptions {
     format?: 'rgb565' | 'rgb444' | 'rgba4444';
     oneBitAlpha?: boolean | number;

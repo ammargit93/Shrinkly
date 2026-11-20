@@ -8,7 +8,9 @@ type RouterContextType = {
 const RouterContext = createContext<RouterContextType | undefined>(undefined);
 
 export function RouterProvider({ children }: { children: React.ReactNode }) {
-  const [path, setPath] = useState(window.location.pathname);
+  const [path, setPath] = useState(
+    typeof window === 'undefined' ? '/' : window.location.pathname,
+  );
 
   useEffect(() => {
     const handlePopState = () => {
