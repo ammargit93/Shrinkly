@@ -15,7 +15,6 @@ import {
 } from '../services/clientBatchCompression';
 import { TargetSize } from './TargetSize';
 import { BatchResult } from './BatchResult';
-import { logUsageEvent } from '../services/usageLogger';
 
 export const MAX_CLIENT_BATCH_IMAGES = 20;
 
@@ -158,25 +157,13 @@ export function BatchCompressor({
       percent: 0,
     });
 
-    const startTime = performance.now();
-
     try {
       const res = await compressBatchClientSide(rawFiles, targetSizeKb, (prog) => {
         setProgress(prog);
       });
-      const durationMs = Math.round(performance.now() - startTime);
 
       setResult(res);
       setStatus('success');
-
-      logUsageEvent('batch_compress', {
-        fileCount: res.fileCount,
-        originalTotalSize: res.originalTotalSize,
-        compressedSize: res.compressedSize,
-        percentageReduction: res.percentageReduction,
-        targetSizeKb,
-        durationMs,
-      });
     } catch (err) {
       console.error('Client batch compression failed:', err);
       setStatus('error');

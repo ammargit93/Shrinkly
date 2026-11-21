@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import type { CompressionResult as CompressionResultType } from '../types/compression';
 import { Download, RefreshCw, CheckCircle2, Copy, Check, SlidersHorizontal, Eye } from 'lucide-react';
-import { logUsageEvent } from '../services/usageLogger';
 
 interface CompressionResultProps {
   result: CompressionResultType;
@@ -29,13 +28,6 @@ export function CompressionResult({
   const isAlreadyWithinLimit = result.percentageReduction === 0;
   const bytesSaved = Math.max(0, result.originalSize - result.compressedSize);
 
-  const handleDownload = () => {
-    logUsageEvent('single_download', {
-      format: result.outputFormat,
-      compressedSize: result.compressedSize,
-    });
-  };
-
   const handleCopy = async () => {
     try {
       // Browsers support copying PNG/JPEG/GIF via ClipboardItem
@@ -50,20 +42,12 @@ export function CompressionResult({
         }),
       ]);
       setCopied(true);
-      logUsageEvent('single_copy', {
-        format: result.outputFormat,
-        compressedSize: result.compressedSize,
-      });
       setTimeout(() => setCopied(false), 2000);
     } catch {
       // Fallback: Copy blob download link
       try {
         await navigator.clipboard.writeText(window.location.href);
         setCopied(true);
-        logUsageEvent('single_copy', {
-          format: result.outputFormat,
-          compressedSize: result.compressedSize,
-        });
         setTimeout(() => setCopied(false), 2000);
       } catch {
         // Ignore
@@ -180,7 +164,7 @@ export function CompressionResult({
         <a
           href={result.downloadUrl}
           download={result.name}
-          onClick={handleDownload}
+          // onClick={handleDownload}
           className="w-full sm:flex-1 flex items-center justify-center gap-2 py-3 px-4 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] dark:bg-emerald-600 dark:hover:bg-emerald-500 rounded-lg transition-all shadow-xs text-center"
         >
           <Download className="h-4 w-4" />
